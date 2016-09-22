@@ -1,0 +1,21 @@
+# This file is part of DBSCAN.
+# https://github.com/josl/DBSCAN
+
+# Licensed under the MIT license:
+# http://www.opensource.org/licenses/MIT-license
+# Copyright (c) 2016, Jose L. Bellod Cisneros <bellod.cisneros@gmail.com>
+
+language: python
+
+python:
+    - "2.7"
+    - "3.4"
+    - "pypy"
+
+install:
+    # install python requirements
+    - make setup
+
+script:
+    # run tests
+    - make test
