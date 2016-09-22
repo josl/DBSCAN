@@ -1,0 +1,22 @@
+# This file is part of DBSCAN.
+# https://github.com/josl/DBSCAN
+
+# Licensed under the MIT license:
+# http://www.opensource.org/licenses/MIT-license
+# Copyright (c) 2016, Jose L. Bellod Cisneros <bellod.cisneros@gmail.com>
+
+[run]
+omit =
+    *tests.py
+branch = True
+source =
+    DBSCAN
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    from urllib.parse import parse_qs
+    except ImportError:
