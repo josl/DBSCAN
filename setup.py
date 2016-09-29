@@ -51,6 +51,7 @@ setup(
     install_requires=[
         # add your dependencies here
         'scipy >= 0.18.0, < 0.19.0'
+        'primefac >= 1.1.0, < 1.2.0'
         # remember to use 'package-name>=x.y.z,<x.y+1.0' notation (this way you
         # get bugfixes)
     ],
