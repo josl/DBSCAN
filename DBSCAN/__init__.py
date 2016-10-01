@@ -23,43 +23,41 @@ from scipy.sparse import csr_matrix
 #     coefficients = set()
 
 coefficients = set()
+
+#
+# for i in range(1000):
+i = 100
+rights = 0
+for j in range(1000):
+    scan = DBSCAN.DBSCAN('test_files/data_10points_10dims.dat', 0.4, 2, i)
+    DBSCAN.coefficients = set()
+    scan.start()
+    if len(scan.clusters) == 4:
+        rights += 1
+print('Clusters i ', i, ' 4 clusters rate ', rights/1000)
+
+
 class HashPermutation():
     global coefficients
+
     def __init__(self, N, p=None):
         self.p = p
         self.a, self.b = self.get_coefficients()
-        # self.a = a if a is not None else 1
-        # self.b = b if b is not None else 1
         self.N = N
+        # print('(((%d * x) + %d) mod %d) mod %d ' % (self.a, self.b, self.p, self.N))
 
     def get_coefficients(self):
-        # print(self.p)
-        ab = np.random.randint(1, self.p, size=1)[0], np.random.randint(0, self.p, size=1)[0]
-        # print(ab)
-        # ab = tuple(np.random.randint(1, self.p, size=2))
-        return ab
-        # print(ab, self.p)
-        # if ab in coefficients:
-        #     # print(ab)
-        #     return self.get_coefficients()
-        # else:
-        #     coefficients.add(ab)
-        #     return ab
-
-
-    def primes(self, n):
-        # https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
-        # simple Sieve of Eratosthenes
-        # http://stackoverflow.com/a/19498432
-        odds = range(3, n+1, 2)
-        sieve = set(sum([list(range(q*q, n+1, q+q)) for q in odds], []))
-        return [2] + [p for p in odds if p not in sieve]
+        a = np.random.randint(1, self.p, size=1)[0]
+        b = np.random.randint(0, self.p, size=1)[0]
+        if (a, b) in coefficients:
+            # print(a, b, coefficients)
+            return self.get_coefficients()
+        coefficients.add((a, b))
+        return (a, b)
 
     def random_prime(n):
-        # print('----------------------')
-        for random_n in range(n, n * 10):
+        for random_n in range(n * 500, n * 2000):
             # print(random_n)
-            # if self.__is_prime(random_n):
             if random_n <= 1:
                 continue
             else:
@@ -69,22 +67,9 @@ class HashPermutation():
                 if random_n % i == 0:
                     continue
                 return random_n
-            # if random_n    in primes:
-            #     return random_n
-
-    def __is_prime(self, x):
-        # TODO look at: https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
-        if x <= 1:
-            return False
-        else:
-            for i in range(2, int(np.sqrt(x)) + 1):
-                if x % i == 0:
-                    return False
-        return True
 
     def hash(self, x):
         return (((self.a * x) + self.b) % self.p) % self.N
-        # return (((self.a * x) + self.b) % self.p)
 
 
 class LSH():
@@ -94,62 +79,31 @@ class LSH():
         global coefficients
         self.dist = dist
         self.sparse_matrix = sparse_matrix
-        # sparse_matrix = [
-        #     [1, 0, 0, 1],
-        #     [0, 0, 1, 0],
-        #     [1, 1, 0, 1],
-        #     [0, 0, 1, 1],
-        #     [0, 0, 1, 0]
-        # ]
-        # row = np.array([0, 0, 1, 2, 2, 3, 3, 3, 4])
-        # col = np.array([0, 3, 2, 1, 3, 0, 2, 3, 2])
-        # data = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1])
-        # self.sparse_matrix = csr_matrix((data, (row, col)), shape=(5, 4)).transpose()
         self.point_set = {}
-        for row_i, row in enumerate(self.sparse_matrix):
-            self.point_set[row_i] = row.indices
+        # for row_i, row in enumerate(self.sparse_matrix):
+        #     self.point_set[row_i] = row.indices
         self.point_dict = {}
         self.k_permutations = k_permutations
         self.dimensions = self.sparse_matrix.shape[1]
-        # self.dimensions = sparse_matrix.dim()
         self.n_points = self.sparse_matrix.shape[0]
-        # Innit signature matrix: permutations x dimension
         self.signatures = [
             np.array([math.inf for i in range(0, self.k_permutations)])
             for j in range(0, self.n_points)
         ]
         self.neigbors = defaultdict(set)
         self.hash_permutations = []
-        # a = HashPermutation(self.dimensions, 1, 1, 5)
-        # b = HashPermutation(self.dimensions, 3, 1, 5)
-        # self.hash_permutations = [a.hash, b.hash]
-        # print(self.dimensions)
-        # print(self.n_points)
+
         p = HashPermutation.random_prime(self.n_points)
-        print(p)
-        # coefficients = Coefficient()
+        # print(p, self.k_permutations)
         for k in range(0, self.k_permutations):
+            # print(k)
             perm = HashPermutation(self.n_points, p)
-            # print('-------')
-            # coefficients = set()
             self.hash_permutations.append(perm.hash)
-        # print(coefficients.coefficients)
         self.permutations = {}
 
     def signature_distance(self, a, b):
-        # intersect = np.intersect1d(a,b)
         intersect = (a == b).sum()
         return intersect / self.k_permutations
-        # if intersect != 0:
-        #     return intersect / self.k_permutations
-        #     # return (self.k_permutations - np.intersect1d(a,b)[0])/self.k_permutations
-        # else:
-        #     return 0
-        # intersect = 0
-        # for index in zip(a, b):
-        #     if a == b:
-        #         intersect += 1
-        # return intersect / self.k_permutations
 
     def jaccard_distance(self, a, b):
         intersect = 0
@@ -163,23 +117,16 @@ class LSH():
     def createLHS(self):
         for col_j in range(0, self.n_points):
             for sign_i, hash_func in enumerate(self.hash_permutations):
-                # We assume that the matrix has been transformed into an array
-                # of indexes
-                for row_i in self.point_set[col_j]:
-                    # print(row_i)
-                    # print(col_j)
-                    # print(sign_i)
+                # for row_i in self.point_set[col_j]:
+                for row_i in self.sparse_matrix[col_j].indices:
                     hash_row = hash_func(row_i)
-                    # print(hash_row , self.signatures[col_j][sign_i], hash_row < self.signatures[col_j][sign_i])
                     if hash_row < self.signatures[col_j][sign_i]:
                         self.signatures[col_j][sign_i] = hash_row
-                    # if hash_func(row_i)[0] < self.signatures[col_j][sign_i]:
-                    #     self.signatures[col_j][sign_i] = hash_func(row_i)[0]
+
     def query_point_region(self):
         for index_a, point_a in enumerate(self.signatures):
             for index_b, point_b in enumerate(self.signatures):
                 dist = 1 - self.signature_distance(point_a, point_b)
-                # print(point_a, point_b, dist)
                 if dist <= self.dist:
                     self.neigbors[index_a].add(index_b)
 
@@ -210,39 +157,25 @@ class DBSCAN():
     def expand_cluster(self, point, point_neigh, cluster):
 
         self.clusters[cluster] = set([point])
-        # print('init len!', len(point_neigh))
         list_neigh = list(point_neigh)
         tem_neigh = point_neigh
         for new_point in list_neigh:
-            # print('new new point', new_point)
             if new_point not in self.visited:
                 self.visited.add(new_point)
                 neighs = self.neigbors[new_point]
-                # print('new \'Burb point', new_point, neighs)
-                # print(new_point, neighs)
                 if len(neighs) >= self.minPTS:
-                    # print('we expand!!!', point_neigh, neighs)
-                    # point_neigh = point_neigh.union(neighs)
-                    # point_neigh += list(neighs)
-                    # print(type(neighs),type(tem_neigh))
                     tem_neigh.update(neighs - tem_neigh)
                     list_neigh += list(neighs - tem_neigh)
-                    # list_neigh += list(neighs - set(list_neigh))
-
-                    # print(point_neigh)
             if new_point not in self.clustered:
                 self.clustered.add(new_point)
                 self.clusters[cluster].add(new_point)
-        # print('finish len!', len(point_neigh))
 
     def start(self):
         cluster = 0
         for point in self.neigbors:
-            # for point in range(0, self.lsh.n_points):
             if point not in self.visited:
                 self.visited.add(point)
                 neigh = self.neigbors[point]
-                # print('new_point!', point, neigh)
                 if len(neigh) >= self.minPTS:
                     self.expand_cluster(point, neigh, cluster)
                     cluster += 1
