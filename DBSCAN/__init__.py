@@ -143,10 +143,6 @@ class DBSCAN():
     def __init__(self, file_name, eps=0.1, minPTS=2, hash_k=100):
         self.sparse_matrix = pickle.load(
             open(file_name, 'rb'), encoding='latin1')
-        # self.lsh = LSH(eps, self.sparse_matrix, hash_k)
-        # self.lsh.createLHS()
-        # self.lsh.query_point_region()
-
         self.neigbors = defaultdict(set)
         self.dist = eps
         self.minPTS = minPTS
@@ -155,39 +151,17 @@ class DBSCAN():
         self.clustered = set()
         self.noise = set()
         self.brute_force_distance()
-    #
-    # def jaccard_distance(self, a, b):
-    #     intersect = 0
-    #     union = len(a)
-    #     intersect = (a != b).sum()
-    #     for a_i, b_i in zip(a, b):
-    #         if a_i == 0 and b_i == 0:
-    #             union -= 1
-    #     return (intersect / union)
 
     def jaccard_distance(self, a, b):
-        intersect = 0
-        M10 = 0
-        M00 = 0
-        M01 = 0
-        M11 = 0
-        # intersect = (a != b).sum()
-        for a_i, b_i in zip(a, b):
-            if a_i == 1 and b_i == 1:
-                M11 += 1
-            if a_i == 0 and b_i == 0:
-                M00 += 1
-            if a_i == 1 and b_i == 0:
-                M10 += 1
-            if a_i == 0 and b_i == 1:
-                M01 += 1
-        return (M11 / (M10 + M11 + M01))
+        intersect = a & b
+        return (len(intersect) / ((len(a) + len(b)) - len(intersect)))
 
     def brute_force_distance(self):
-        for index_a, point_a in enumerate(self.sparse_matrix.toarray()):
-            for index_b, point_b in enumerate(self.sparse_matrix.toarray()):
-                dist = 1 - self.jaccard_distance(point_a, point_b)
-                # print(point_a, point_b, dist, 1 + dist)
+        for index_a, point_a in enumerate(self.sparse_matrix):
+            for index_b, point_b in enumerate(self.sparse_matrix):
+                dist = 1 - \
+                    self.jaccard_distance(
+                        set(point_a.indices), set(point_b.indices))
                 if dist <= self.dist:
                     self.neigbors[index_a].add(index_b)
 
@@ -201,8 +175,6 @@ class DBSCAN():
                 self.visited.add(new_point)
                 neighs = self.neigbors[new_point]
                 if len(neighs) >= self.minPTS:
-                    # tem_neigh.update(neighs - tem_neigh)
-                    # list_neigh += list(neighs - tem_neigh)
                     list_neigh += list(neighs - set(list_neigh))
             if new_point not in self.clustered:
                 self.clustered.add(new_point)
