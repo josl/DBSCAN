@@ -159,9 +159,7 @@ class DBSCAN():
     def brute_force_distance(self):
         for index_a, point_a in enumerate(self.sparse_matrix):
             for index_b, point_b in enumerate(self.sparse_matrix):
-                dist = 1 - \
-                    self.jaccard_distance(
-                        set(point_a.indices), set(point_b.indices))
+                dist = 1 - self.jaccard_distance(set(point_a.indices), set(point_b.indices))
                 if dist <= self.dist:
                     self.neigbors[index_a].add(index_b)
 
