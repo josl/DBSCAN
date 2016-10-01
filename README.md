@@ -19,7 +19,8 @@ For the five input files, use the following parameters
 - File 4: eps=0.15 and M=2
 - File 5: eps=0.15 and M=2
 
-You should get this many clusters when running your algorithm on the five test files (also counting the special cluster of points not assigned to a cluster): 4, 6, 9, 394, 1692
+You should get this many clusters when running your algorithm on the five test files (also counting the special cluster of points not assigned to a cluster):
+4, 6, 9, 394, 1692
 Remember to describe how you process the data in order for the algorithm to work with very high dimensional data.
 
 You should also document how many points is contained in the largest cluster for each of the 5 test files. The correct answers for this will be released for giving peer feedback.
