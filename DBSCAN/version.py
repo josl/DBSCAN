@@ -8,4 +8,4 @@
 # http://www.opensource.org/licenses/MIT-license
 # Copyright (c) 2016, Jose L. Bellod Cisneros <bellod.cisneros@gmail.com>
 
-__version__ = '0.1.3'  # NOQA
+__version__ = '0.1.4'  # NOQA
